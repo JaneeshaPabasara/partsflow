@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heavy Vehicle Parts Inventory Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'sans': ['Inter', 'ui-sans-serif', 'system-ui']
+                    },
+                    colors: {
+                        border: "#e2e8f0",
+                        input: "#ffffff",
+                        ring: "#2563eb",
+                        background: "#ffffff",
+                        foreground: "#0f172a",
+                        primary: {
+                            DEFAULT: "#2563eb",
+                            foreground: "#ffffff"
+                        },
+                        secondary: {
+                            DEFAULT: "#f1f5f9",
+                            foreground: "#475569"
+                        },
+                        destructive: {
+                            DEFAULT: "#ef4444",
+                            foreground: "#ffffff"
+                        },
+                        muted: {
+                            DEFAULT: "#f1f5f9",
+                            foreground: "#64748b"
+                        },
+                        accent: {
+                            DEFAULT: "#f1f5f9",
+                            foreground: "#475569"
+                        },
+                        card: {
+                            DEFAULT: "#ffffff",
+                            foreground: "#0f172a"
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .sidebar-transition { transition: width 0.3s ease-in-out; }
+        .table-row:hover { background-color: #f8fafc; }
+        .chart-container { height: 300px; }
+        
+        /* Shadcn-inspired component styles */
+        .btn {
+            @apply inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50;
+        }
+        
+        .btn-primary {
+            @apply bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2;
+        }
+        
+        .btn-secondary {
+            @apply bg-secondary text-secondary-foreground hover:bg-secondary/80 h-10 px-4 py-2;
+        }
+        
+        .btn-outline {
+            @apply border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2;
+        }
+        
+        .card {
+            @apply rounded-lg border bg-card text-card-foreground shadow-sm;
+        }
+        
+        .card-header {
+            @apply flex flex-col space-y-1.5 p-6;
+        }
+        
+        .card-content {
+            @apply p-6 pt-0;
+        }
+        
+        .input {
+            @apply flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50;
+        }
+        
+        .badge {
+            @apply inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring;
+        }
+        
+        .badge-success {
+            @apply border-transparent bg-green-100 text-green-800 hover:bg-green-100/80;
+        }
+        
+        .badge-warning {
+            @apply border-transparent bg-yellow-100 text-yellow-800 hover:bg-yellow-100/80;
+        }
+        
+        .badge-danger {
+            @apply border-transparent bg-red-100 text-red-800 hover:bg-red-100/80;
+        }
+        
+        .badge-secondary {
+            @apply border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 font-sans">
+    <!-- @COMPONENT: MainLayout -->
+    <div class="flex h-screen bg-slate-50">
+        <!-- @COMPONENT: Sidebar -->
+        <aside class="w-64 bg-white border-r border-slate-200 sidebar-transition">
+            <div class="p-6">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                        <i data-lucide="truck" class="w-5 h-5 text-white"></i>
+                    </div>
+                    <h1 class="text-xl font-bold text-slate-900">HV Parts Manager</h1>
+                </div>
+            </div>
+            
+            <nav class="px-6 pb-6">
+                <ul class="space-y-2">
+                    <li>
+                        <a href="#" class="flex items-center space-x-3 px-3 py-2 rounded-lg bg-blue-50 text-blue-700 font-medium">
+                            <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100 font-medium">
+                            <i data-lucide="package" class="w-5 h-5"></i>
+                            <span>Inventory</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100 font-medium">
+                            <i data-lucide="file-text" class="w-5 h-5"></i>
+                            <span>Reports</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100 font-medium">
+                            <i data-lucide="building-2" class="w-5 h-5"></i>
+                            <span>Suppliers</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100 font-medium">
+                            <i data-lucide="arrow-right-left" class="w-5 h-5"></i>
+                            <span>Movements</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100 font-medium">
+                            <i data-lucide="settings" class="w-5 h-5"></i>
+                            <span>Settings</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+        <!-- @END_COMPONENT: Sidebar -->
+
+        <!-- @COMPONENT: MainContent -->
+        <main class="flex-1 overflow-auto">
+            <!-- @COMPONENT: Header -->
+            <header class="bg-white border-b border-slate-200 px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-900">Dashboard</h2>
+                        <p class="text-slate-600">Monitor your inventory performance and stock levels</p>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <!-- @COMPONENT: NotificationBadge -->
+                        <button class="relative p-2 text-slate-600 hover:text-slate-900">
+                            <i data-lucide="bell" class="w-5 h-5"></i>
+                            <span class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span>
+                        </button>
+                        <!-- @END_COMPONENT: NotificationBadge -->
+                        
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-slate-200 rounded-full flex items-center justify-center">
+                                <i data-lucide="user" class="w-4 h-4 text-slate-600"></i>
+                            </div>
+                            <span class="text-sm font-medium text-slate-900" data-bind="user.name">John Manager</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            <!-- @END_COMPONENT: Header -->
+
+            <!-- @COMPONENT: DashboardContent -->
+            <div class="p-6 space-y-6">
+                <!-- @COMPONENT: StatsCards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="card">
+                        <div class="card-content p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-slate-600">Total Parts</p>
+                                    <p class="text-3xl font-bold text-slate-900" data-bind="stats.totalParts">2,847</p>
+                                </div>
+                                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                    <i data-lucide="package" class="w-6 h-6 text-blue-600"></i>
+                                </div>
+                            </div>
+                            <div class="mt-4 flex items-center text-sm">
+                                <i data-lucide="trending-up" class="w-4 h-4 text-green-600 mr-1"></i>
+                                <span class="text-green-600 font-medium">+12.5%</span>
+                                <span class="text-slate-600 ml-1">from last month</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-content p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-slate-600">Low Stock Items</p>
+                                    <p class="text-3xl font-bold text-amber-600" data-bind="stats.lowStock">23</p>
+                                </div>
+                                <div class="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
+                                    <i data-lucide="alert-triangle" class="w-6 h-6 text-amber-600"></i>
+                                </div>
+                            </div>
+                            <div class="mt-4 flex items-center text-sm">
+                                <i data-lucide="trending-down" class="w-4 h-4 text-red-600 mr-1"></i>
+                                <span class="text-red-600 font-medium">+3</span>
+                                <span class="text-slate-600 ml-1">new alerts</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-content p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-slate-600">Total Value</p>
+                                    <p class="text-3xl font-bold text-slate-900" data-bind="stats.totalValue">$487K</p>
+                                </div>
+                                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                                    <i data-lucide="dollar-sign" class="w-6 h-6 text-green-600"></i>
+                                </div>
+                            </div>
+                            <div class="mt-4 flex items-center text-sm">
+                                <i data-lucide="trending-up" class="w-4 h-4 text-green-600 mr-1"></i>
+                                <span class="text-green-600 font-medium">+8.2%</span>
+                                <span class="text-slate-600 ml-1">from last month</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-content p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-slate-600">Active Suppliers</p>
+                                    <p class="text-3xl font-bold text-slate-900" data-bind="stats.suppliers">18</p>
+                                </div>
+                                <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                                    <i data-lucide="building-2" class="w-6 h-6 text-purple-600"></i>
+                                </div>
+                            </div>
+                            <div class="mt-4 flex items-center text-sm">
+                                <span class="text-slate-600">2 new this month</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: StatsCards -->
+
+                <!-- @COMPONENT: AlertsAndQuickActions -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- @COMPONENT: LowStockAlerts -->
+                    <div class="lg:col-span-2">
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="flex items-center justify-between">
+                                    <h3 class="text-lg font-semibold text-slate-900">Low Stock Alerts</h3>
+                                    <button class="btn btn-outline text-sm">
+                                        <i data-lucide="eye" class="w-4 h-4 mr-2"></i>
+                                        View All
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-content">
+                                <div class="space-y-4">
+                                    <!-- @MAP: lowStockItems.map(item => ( -->
+                                    <div class="flex items-center justify-between p-4 bg-amber-50 rounded-lg border border-amber-200">
+                                        <div class="flex items-center space-x-4">
+                                            <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
+                                                <i data-lucide="package" class="w-5 h-5 text-amber-600"></i>
+                                            </div>
+                                            <div>
+                                                <p class="font-medium text-slate-900" data-bind="item.name">Brake Pad Set - Heavy Duty</p>
+                                                <p class="text-sm text-slate-600" data-bind="item.partNumber">Part #BP-HD-2024</p>
+                                            </div>
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="text-sm font-medium text-amber-600" data-bind="item.quantity">5 units left</p>
+                                            <p class="text-xs text-slate-600">Min: 20 units</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex items-center justify-between p-4 bg-red-50 rounded-lg border border-red-200">
+                                        <div class="flex items-center space-x-4">
+                                            <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                                                <i data-lucide="package" class="w-5 h-5 text-red-600"></i>
+                                            </div>
+                                            <div>
+                                                <p class="font-medium text-slate-900" data-bind="item.name">Engine Oil Filter</p>
+                                                <p class="text-sm text-slate-600" data-bind="item.partNumber">Part #OF-ENG-500</p>
+                                            </div>
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="text-sm font-medium text-red-600" data-bind="item.quantity">2 units left</p>
+                                            <p class="text-xs text-slate-600">Min: 15 units</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex items-center justify-between p-4 bg-amber-50 rounded-lg border border-amber-200">
+                                        <div class="flex items-center space-x-4">
+                                            <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
+                                                <i data-lucide="package" class="w-5 h-5 text-amber-600"></i>
+                                            </div>
+                                            <div>
+                                                <p class="font-medium text-slate-900" data-bind="item.name">Transmission Fluid</p>
+                                                <p class="text-sm text-slate-600" data-bind="item.partNumber">Part #TF-SYN-20L</p>
+                                            </div>
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="text-sm font-medium text-amber-600" data-bind="item.quantity">8 units left</p>
+                                            <p class="text-xs text-slate-600">Min: 25 units</p>
+                                        </div>
+                                    </div>
+                                    <!-- @END_MAP )) -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- @END_COMPONENT: LowStockAlerts -->
+
+                    <!-- @COMPONENT: QuickActions -->
+                    <div>
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="text-lg font-semibold text-slate-900">Quick Actions</h3>
+                            </div>
+                            <div class="card-content">
+                                <div class="space-y-3">
+                                    <button class="btn btn-primary w-full justify-start" data-event="click:openAddPartModal">
+                                        <i data-lucide="plus" class="w-4 h-4 mr-2"></i>
+                                        Add New Part
+                                    </button>
+                                    <button class="btn btn-outline w-full justify-start" data-event="click:openStockInModal">
+                                        <i data-lucide="arrow-up" class="w-4 h-4 mr-2"></i>
+                                        Stock In
+                                    </button>
+                                    <button class="btn btn-outline w-full justify-start" data-event="click:openStockOutModal">
+                                        <i data-lucide="arrow-down" class="w-4 h-4 mr-2"></i>
+                                        Stock Out
+                                    </button>
+                                    <button class="btn btn-outline w-full justify-start" data-event="click:generateReport">
+                                        <i data-lucide="file-text" class="w-4 h-4 mr-2"></i>
+                                        Generate Report
+                                    </button>
+                                    <button class="btn btn-outline w-full justify-start" data-event="click:exportData">
+                                        <i data-lucide="download" class="w-4 h-4 mr-2"></i>
+                                        Export Data
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- @END_COMPONENT: QuickActions -->
+                </div>
+                <!-- @END_COMPONENT: AlertsAndQuickActions -->
+
+                <!-- @COMPONENT: InventoryTable -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-lg font-semibold text-slate-900">Recent Inventory Items</h3>
+                            <div class="flex items-center space-x-3">
+                                <div class="relative">
+                                    <i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                                    <input type="text" placeholder="Search parts..." class="input pl-10 w-64" data-bind="searchQuery">
+                                </div>
+                                <button class="btn btn-outline">
+                                    <i data-lucide="filter" class="w-4 h-4 mr-2"></i>
+                                    Filter
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-content p-0">
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead>
+                                    <tr class="border-b border-slate-200">
+                                        <th class="text-left py-3 px-6 font-medium text-slate-600">Part Details</th>
+                                        <th class="text-left py-3 px-6 font-medium text-slate-600">Category</th>
+                                        <th class="text-left py-3 px-6 font-medium text-slate-600">Stock</th>
+                                        <th class="text-left py-3 px-6 font-medium text-slate-600">Location</th>
+                                        <th class="text-left py-3 px-6 font-medium text-slate-600">Supplier</th>
+                                        <th class="text-left py-3 px-6 font-medium text-slate-600">Status</th>
+                                        <th class="text-left py-3 px-6 font-medium text-slate-600">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- @MAP: inventoryItems.map(item => ( -->
+                                    <tr class="border-b border-slate-100 table-row">
+                                        <td class="py-4 px-6">
+                                            <div>
+                                                <p class="font-medium text-slate-900" data-bind="item.name">Heavy Duty Brake Disc</p>
+                                                <p class="text-sm text-slate-600" data-bind="item.partNumber">BD-HD-2024-01</p>
+                                            </div>
+                                        </td>
+                                        <td class="py-4 px-6">
+                                            <span class="badge badge-secondary" data-bind="item.category">Braking System</span>
+                                        </td>
+                                        <td class="py-4 px-6">
+                                            <div>
+                                                <p class="font-medium text-slate-900" data-bind="item.quantity">45 units</p>
+                                                <p class="text-sm text-slate-600">Min: 20</p>
+                                            </div>
+                                        </td>
+                                        <td class="py-4 px-6">
+                                            <p class="text-slate-900" data-bind="item.location">A1-B2-C3</p>
+                                        </td>
+                                        <td class="py-4 px-6">
+                                            <p class="text-slate-900" data-bind="item.supplier">AutoParts Co.</p>
+                                        </td>
+                                        <td class="py-4 px-6">
+                                            <span class="badge badge-success">In Stock</span>
+                                        </td>
+                                        <td class="py-4 px-6">
+                                            <div class="flex items-center space-x-2">
+                                                <button class="p-2 text-slate-600 hover:text-blue-600" data-event="click:editItem">
+                                                    <i data-lucide="edit" class="w-4 h-4"></i>
+                                                </button>
+                                                <button class="p-2 text-slate-600 hover:text-red-600" data-event="click:deleteItem">
+                                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    
+                                    <tr class="border-b border-slate-100 table-row">
+                                        <td class="py-4 px-6">
+                                            <div>
+                                                <p class="font-medium text-slate-900" data-bind="item.name">Engine Air Filter</p>
+                                                <p class="text-sm text-slate-600" data-bind="item.partNumber">AF-ENG-2024-02</p>
+                                            </div>
+                                        </td>
+                                        <td class="py-4 px-6">
+                                            <span class="badge badge-secondary" data-bind="item.category">Engine Parts</span>
+                                        </td>
+                                        <td class="py-4 px-6">
+                                            <div>
+                                                <p class="font-medium text-slate-900" data-bind="item.quantity">12 units</p>
+                                                <p class="text-sm text-slate-600">Min: 15</p>
+                                            </div>
+                                        </td>
+                                        <td class="py-4 px-6">
+                                            <p class="text-slate-900" data-bind="item.location">B2-C1-D4</p>
+                                        </td>
+                                        <td class="py-4 px-6">
+                                            <p class="text-slate-900" data-bind="item.supplier">EngineMax Ltd.</p>
+                                        </td>
+                                        <td class="py-4 px-6">
+                                            <span class="badge badge-warning">Low Stock</span>
+                                        </td>
+                                        <td class="py-4 px-6">
+                                            <div class="flex items-center space-x-2">
+                                                <button class="p-2 text-slate-600 hover:text-blue-600" data-event="click:editItem">
+                                                    <i data-lucide="edit" class="w-4 h-4"></i>
+                                                </button>
+                                                <button class="p-2 text-slate-600 hover:text-red-600" data-event="click:deleteItem">
+                                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    
+                                    <tr class="border-b border-slate-100 table-row">
+                                        <td class="py-4 px-6">
+                                            <div>
+                                                <p class="font-medium text-slate-900" data-bind="item.name">Hydraulic Pump</p>
+                                                <p class="text-sm text-slate-600" data-bind="item.partNumber">HP-HYD-2024-03</p>
+                                            </div>
+                                        </td>
+                                        <td class="py-4 px-6">
+                                            <span class="badge badge-secondary" data-bind="item.category">Hydraulics</span>
+                                        </td>
+                                        <td class="py-4 px-6">
+                                            <div>
+                                                <p class="font-medium text-slate-900" data-bind="item.quantity">3 units</p>
+                                                <p class="text-sm text-slate-600">Min: 5</p>
+                                            </div>
+                                        </td>
+                                        <td class="py-4 px-6">
+                                            <p class="text-slate-900" data-bind="item.location">C3-D2-E1</p>
+                                        </td>
+                                        <td class="py-4 px-6">
+                                            <p class="text-slate-900" data-bind="item.supplier">HydroSystems</p>
+                                        </td>
+                                        <td class="py-4 px-6">
+                                            <span class="badge badge-danger">Critical</span>
+                                        </td>
+                                        <td class="py-4 px-6">
+                                            <div class="flex items-center space-x-2">
+                                                <button class="p-2 text-slate-600 hover:text-blue-600" data-event="click:editItem">
+                                                    <i data-lucide="edit" class="w-4 h-4"></i>
+                                                </button>
+                                                <button class="p-2 text-slate-600 hover:text-red-600" data-event="click:deleteItem">
+                                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    
+                                    <tr class="border-b border-slate-100 table-row">
+                                        <td class="py-4 px-6">
+                                            <div>
+                                                <p class="font-medium text-slate-900" data-bind="item.name">Transmission Belt</p>
+                                                <p class="text-sm text-slate-600" data-bind="item.partNumber">TB-TRANS-2024-04</p>
+                                            </div>
+                                        </td>
+                                        <td class="py-4 px-6">
+                                            <span class="badge badge-secondary" data-bind="item.category">Transmission</span>
+                                        </td>
+                                        <td class="py-4 px-6">
+                                            <div>
+                                                <p class="font-medium text-slate-900" data-bind="item.quantity">28 units</p>
+                                                <p class="text-sm text-slate-600">Min: 10</p>
+                                            </div>
+                                        </td>
+                                        <td class="py-4 px-6">
+                                            <p class="text-slate-900" data-bind="item.location">A3-B1-C2</p>
+                                        </td>
+                                        <td class="py-4 px-6">
+                                            <p class="text-slate-900" data-bind="item.supplier">TransParts Inc.</p>
+                                        </td>
+                                        <td class="py-4 px-6">
+                                            <span class="badge badge-success">In Stock</span>
+                                        </td>
+                                        <td class="py-4 px-6">
+                                            <div class="flex items-center space-x-2">
+                                                <button class="p-2 text-slate-600 hover:text-blue-600" data-event="click:editItem">
+                                                    <i data-lucide="edit" class="w-4 h-4"></i>
+                                                </button>
+                                                <button class="p-2 text-slate-600 hover:text-red-600" data-event="click:deleteItem">
+                                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    
+                                    <tr class="border-b border-slate-100 table-row">
+                                        <td class="py-4 px-6">
+                                            <div>
+                                                <p class="font-medium text-slate-900" data-bind="item.name">Fuel Injector</p>
+                                                <p class="text-sm text-slate-600" data-bind="item.partNumber">FI-FUEL-2024-05</p>
+                                            </div>
+                                        </td>
+                                        <td class="py-4 px-6">
+                                            <span class="badge badge-secondary" data-bind="item.category">Fuel System</span>
+                                        </td>
+                                        <td class="py-4 px-6">
+                                            <div>
+                                                <p class="font-medium text-slate-900" data-bind="item.quantity">15 units</p>
+                                                <p class="text-sm text-slate-600">Min: 8</p>
+                                            </div>
+                                        </td>
+                                        <td class="py-4 px-6">
+                                            <p class="text-slate-900" data-bind="item.location">D1-E2-F3</p>
+                                        </td>
+                                        <td class="py-4 px-6">
+                                            <p class="text-slate-900" data-bind="item.supplier">FuelTech Pro</p>
+                                        </td>
+                                        <td class="py-4 px-6">
+                                            <span class="badge badge-success">In Stock</span>
+                                        </td>
+                                        <td class="py-4 px-6">
+                                            <div class="flex items-center space-x-2">
+                                                <button class="p-2 text-slate-600 hover:text-blue-600" data-event="click:editItem">
+                                                    <i data-lucide="edit" class="w-4 h-4"></i>
+                                                </button>
+                                                <button class="p-2 text-slate-600 hover:text-red-600" data-event="click:deleteItem">
+                                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <!-- @END_MAP )) -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="p-6 border-t border-slate-200">
+                            <div class="flex items-center justify-between">
+                                <p class="text-sm text-slate-600">Showing 1 to 5 of 2,847 entries</p>
+                                <div class="flex items-center space-x-2">
+                                    <button class="btn btn-outline px-3 py-1 text-sm" disabled>Previous</button>
+                                    <button class="btn btn-primary px-3 py-1 text-sm">1</button>
+                                    <button class="btn btn-outline px-3 py-1 text-sm">2</button>
+                                    <button class="btn btn-outline px-3 py-1 text-sm">3</button>
+                                    <span class="text-slate-600">...</span>
+                                    <button class="btn btn-outline px-3 py-1 text-sm">284</button>
+                                    <button class="btn btn-outline px-3 py-1 text-sm">Next</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: InventoryTable -->
+            </div>
+            <!-- @END_COMPONENT: DashboardContent -->
+        </main>
+        <!-- @END_COMPONENT: MainContent -->
+    </div>
+    <!-- @END_COMPONENT: MainLayout -->
+
+    <!-- @COMPONENT: Modal for Add New Part -->
+    <div id="addPartModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50" data-implementation="Modal should be controlled by React state">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="card w-full max-w-2xl">
+                <div class="card-header">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-slate-900">Add New Part</h3>
+                        <button class="p-2 text-slate-600 hover:text-slate-900" data-event="click:closeModal">
+                            <i data-lucide="x" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <form class="space-y-6" data-implementation="Form should include validation">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-2">Part Name</label>
+                                <input type="text" class="input" placeholder="Enter part name" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-2">Part Number</label>
+                                <input type="text" class="input" placeholder="Enter part number" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-2">Category</label>
+                                <select class="input" required>
+                                    <option value="">Select category</option>
+                                    <option value="engine">Engine Parts</option>
+                                    <option value="braking">Braking System</option>
+                                    <option value="transmission">Transmission</option>
+                                    <option value="hydraulics">Hydraulics</option>
+                                    <option value="electrical">Electrical</option>
+                                    <option value="fuel">Fuel System</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-2">Supplier</label>
+                                <select class="input" required>
+                                    <option value="">Select supplier</option>
+                                    <option value="autoparts">AutoParts Co.</option>
+                                    <option value="enginemax">EngineMax Ltd.</option>
+                                    <option value="hydrosystems">HydroSystems</option>
+                                    <option value="transparts">TransParts Inc.</option>
+                                    <option value="fueltech">FuelTech Pro</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-2">Initial Quantity</label>
+                                <input type="number" class="input" placeholder="0" min="0" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-2">Minimum Stock Level</label>
+                                <input type="number" class="input" placeholder="0" min="0" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-2">Unit Price</label>
+                                <input type="number" class="input" placeholder="0.00" step="0.01" min="0" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-2">Storage Location</label>
+                                <input type="text" class="input" placeholder="e.g., A1-B2-C3" required>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-2">Description</label>
+                            <textarea class="input min-h-[100px]" placeholder="Enter part description"></textarea>
+                        </div>
+                        <div class="flex items-center justify-end space-x-3 pt-6 border-t border-slate-200">
+                            <button type="button" class="btn btn-outline" data-event="click:closeModal">Cancel</button>
+                            <button type="submit" class="btn btn-primary" data-event="click:submitForm">Add Part</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: Modal for Add New Part -->
+
+    <script>
+        // TODO: Implement business logic, API calls, and state management
+        (() => {
+            // Initialize Lucide icons
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+
+            // TODO: Modal management should be handled by React state
+            function setupModalListeners() {
+                const modal = document.getElementById('addPartModal');
+                const openButtons = document.querySelectorAll('[data-event*="openAddPartModal"]');
+                const closeButtons = document.querySelectorAll('[data-event*="closeModal"]');
+
+                openButtons.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        modal.classList.remove('hidden');
+                    });
+                });
+
+                closeButtons.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        modal.classList.add('hidden');
+                    });
+                });
+
+                // Close modal on backdrop click
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.classList.add('hidden');
+                    }
+                });
+            }
+
+            // TODO: Form handling should be implemented with proper validation
+            function setupFormListeners() {
+                const forms = document.querySelectorAll('form');
+                forms.forEach(form => {
+                    form.addEventListener('submit', (e) => {
+                        e.preventDefault();
+                        // TODO: Implement form validation and submission
+                        console.log('Form submission prevented - implement validation and API call');
+                    });
+                });
+            }
+
+            // TODO: Table interactions should be handled by React components
+            function setupTableListeners() {
+                const editButtons = document.querySelectorAll('[data-event*="editItem"]');
+                const deleteButtons = document.querySelectorAll('[data-event*="deleteItem"]');
+
+                editButtons.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        // TODO: Implement edit functionality
+                        console.log('Edit item clicked - implement edit modal/form');
+                    });
+                });
+
+                deleteButtons.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        // TODO: Implement delete confirmation and API call
+                        console.log('Delete item clicked - implement confirmation dialog');
+                    });
+                });
+            }
+
+            // Initialize all event listeners
+            document.addEventListener('DOMContentLoaded', () => {
+                setupModalListeners();
+                setupFormListeners();
+                setupTableListeners();
+            });
+        })();
+    </script>
+</body>
+</html>
